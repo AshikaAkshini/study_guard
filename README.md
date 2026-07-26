@@ -63,7 +63,6 @@ Stainless-Study-Guard/
 ├── server.js
 ├── package.json
 ├── package-lock.json
-├── alert.mp3
 └── README.md
 ```
 
