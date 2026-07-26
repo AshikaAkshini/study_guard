@@ -74,13 +74,13 @@ Stainless-Study-Guard/
 ### Clone Repository
 
 ```bash
-git clone https://github.com/your-username/stainless-study-guard.git
+git clone https://github.com/AshikaAkshini/study_guard.git
 ```
 
 ### Navigate to Project
 
 ```bash
-cd stainless-study-guard
+cd study_guard
 ```
 
 ### Install Dependencies
