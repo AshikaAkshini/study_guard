@@ -1,0 +1,14 @@
+{
+  "name": "stainless-study-guard-backend",
+  "version": "1.0.0",
+  "description": "Mock backend notifications server for Stainless Study Guard",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "tunnel": "npx localtunnel --port 3000"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2"
+  }
+}

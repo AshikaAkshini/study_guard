@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stainless Study Guard - Smart Student Proctor</title>
+    
+    <!-- Fonts and Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- MediaPipe Face Mesh -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+</head>
+<body>
+
+    <header>
+        <div class="logo-section">
+            <h1>STAINLESS STUDY GUARD</h1>
+            <p>Next-Gen Attention Proctoring & Activation System</p>
+        </div>
+        <div class="status-indicator">
+            <span class="pulse-dot" id="headerDot"></span>
+            <span class="status-lbl-text" id="headerStatus">System Idle</span>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <!-- Left Panel: Stats and Domain Selector -->
+        <section class="left-panel">
+            <!-- Study Domain Selection -->
+            <div class="glass-card">
+                <h2 class="section-title">Active Study Domain</h2>
+                <div class="domain-grid">
+                    <div class="domain-card active" data-domain="python">
+                        <div>
+                            <div class="domain-name"><i class="fab fa-python" style="color: #3776ab; margin-right: 8px;"></i>Python programming</div>
+                            <div class="domain-desc">Syntax, core logic & data types</div>
+                        </div>
+                        <div class="domain-indicator"></div>
+                    </div>
+                    
+                    <div class="domain-card" data-domain="datascience">
+                        <div>
+                            <div class="domain-name"><i class="fas fa-chart-line" style="color: #ff9f43; margin-right: 8px;"></i>Data Science</div>
+                            <div class="domain-desc">Statistics, ML & data tools</div>
+                        </div>
+                        <div class="domain-indicator"></div>
+                    </div>
+                    
+                    <div class="domain-card" data-domain="ai">
+                        <div>
+                            <div class="domain-name"><i class="fas fa-brain" style="color: #a855f7; margin-right: 8px;"></i>Artificial Intelligence</div>
+                            <div class="domain-desc">Deep learning, LLMs & neural nets</div>
+                        </div>
+                        <div class="domain-indicator"></div>
+                    </div>
+                    
+                    <div class="domain-card" data-domain="marketing">
+                        <div>
+                            <div class="domain-name"><i class="fas fa-bullhorn" style="color: #00d2d3; margin-right: 8px;"></i>Digital Marketing</div>
+                            <div class="domain-desc">SEO, conversion & campaign analytics</div>
+                        </div>
+                        <div class="domain-indicator"></div>
+                    </div>
+                    
+                    <div class="domain-card" data-domain="devops">
+                        <div>
+                            <div class="domain-name"><i class="fas fa-server" style="color: #ff4d4d; margin-right: 8px;"></i>DevOps & Cloud</div>
+                            <div class="domain-desc">Docker, CI/CD pipelines & Git</div>
+                        </div>
+                        <div class="domain-indicator"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Proctoring Stats -->
+            <div class="glass-card">
+                <h2 class="section-title">Session Performance</h2>
+                <div class="stats-list">
+                    <div class="stat-item">
+                        <div class="stat-val" id="studyTimer">00:00</div>
+                        <div class="stat-lbl">Time Studying</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-val" id="alertCounter">0</div>
+                        <div class="stat-lbl">Alerts Triggered</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-val" id="correctQuizzes">0</div>
+                        <div class="stat-lbl">Quizzes Solved</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-val" id="accuracyVal">100%</div>
+                        <div class="stat-lbl">Focus Rating</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Right Panel: Camera Proctor Monitor -->
+        <section class="workspace-panel">
+            <div class="monitor-view">
+                <div class="video-wrapper">
+                    <video id="video" autoplay playsinline muted></video>
+                    <canvas id="overlayCanvas"></canvas>
+                </div>
+                
+                <!-- Setup Screen -->
+                <div class="setup-overlay" id="setupOverlay">
+                    <div style="font-size: 3.5rem; color: var(--primary-cyan); margin-bottom: 1rem;">
+                        <i class="fas fa-shield-halved"></i>
+                    </div>
+                    <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.8rem; margin-bottom: 0.5rem;">Guard Initialization Required</h2>
+                    <p style="color: var(--text-secondary); max-width: 500px; margin-bottom: 1.5rem; font-size: 0.95rem;">
+                        Select your active study domain on the left, then grant camera access to begin real-time sleep and absence monitoring.
+                    </p>
+                    <button class="start-btn" onclick="init()">
+                        <i class="fas fa-play" style="margin-right: 8px;"></i> START MONITORING
+                    </button>
+                </div>
+            </div>
+
+            <!-- Monitoring Status Bar -->
+            <div class="status-bar" id="statusBar">
+                <div class="status-indicator">
+                    <span class="pulse-dot"></span>
+                    <span class="status-lbl-text" id="statusMessage">System idle. Waiting to start...</span>
+                </div>
+                <div style="font-size: 0.85rem; color: var(--text-secondary);" id="trackerInfo">
+                    Absence limit: 5s | Sleep limit: 3s
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Quiz Activation Popup Overlay -->
+    <div class="quiz-overlay" id="quizOverlay">
+        <div class="quiz-container">
+            <div class="quiz-alert-header">
+                <i class="fas fa-triangle-exclamation"></i> Attention: Sleep/Absence Alert
+            </div>
+            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 0.5rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">
+                Active Quiz Verification
+            </p>
+            <div class="quiz-question" id="quizQuestionText">
+                What is the time complexity of searching in a balanced Binary Search Tree?
+            </div>
+            <div class="quiz-options" id="quizOptionsContainer">
+                <button class="option-btn">O(1)</button>
+                <button class="option-btn">O(N)</button>
+                <button class="option-btn">O(log N)</button>
+                <button class="option-btn">O(N log N)</button>
+            </div>
+            <div style="margin-top: 1.5rem; text-align: right; font-size: 0.8rem; color: var(--text-secondary);">
+                Correct answer deactivates the alarm.
+            </div>
+        </div>
+    </div>
+
+    <!-- Alarm Audio Element (with looping) -->
+    <audio id="alarm" src="alert.mp3" loop></audio>
+
+    <!-- Scripts -->
+    <script src="questions.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
